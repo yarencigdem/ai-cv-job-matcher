@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI CV - İş İlanı Analiz Sistemi</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1f2933, #111827);
+      color: #111827;
+    }
+    .page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 1100px;
+      background-color: #f9fafb;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      padding: 24px 28px 28px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 12px;
+    }
+    .title-group h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+    }
+    .title-group p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .badge-pill {
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background-color: #e5f2ff;
+      color: #1d4ed8;
+      font-weight: 600;
+      border: 1px solid #bfdbfe;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 16px 16px 18px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .panel small {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      margin-bottom: 8px;
+      padding: 8px;
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      resize: vertical;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb33;
+      background-color: #f9fafb;
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .file-row input[type="file"] {
+      font-size: 12px;
+    }
+    .file-hint {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .btn-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    button {
+      padding: 9px 18px;
+      font-size: 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #f9fafb;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: default;
+      box-shadow: none;
+    }
+    .btn-secondary {
+      background-color: #e5e7eb;
+      color: #374151;
+    }
+
+    .status-text {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .result {
+      font-size: 13px;
+    }
+    .result h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+    }
+    .score-box {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .score-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: #111827;
+    }
+    .score-max {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .score-tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background-color: #ecfdf3;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .skills-section {
+      margin-top: 10px;
+    }
+    .skills-section p {
+      margin: 0 0 4px;
+      font-weight: 500;
+      font-size: 13px;
+      color: #111827;
+    }
+    .skills-list {
+      margin-bottom: 6px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      margin: 2px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background-color: #e5e7eb;
+      font-size: 11px;
+      color: #111827;
+    }
+    .badge.missing {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+    .badge.matched {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .muted {
+      font-size: 12px;
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    .error-box {
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background-color: #fef2f2;
+      color: #b91c1c;
+      font-size: 12px;
+      border: 1px solid #fecaca;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="card">
+      <div class="card-header">
+        <div class="title-group">
+          <h1>AI Destekli CV – İş İlanı Analiz Sistemi</h1>
+          <p>CV ve ilan metinlerini analiz ederek uyum skoru, güçlü ve eksik becerileri otomatik çıkarır.</p>
+        </div>
+        <div class="badge-pill">NLP • Semantic Similarity • Skill Extraction</div>
+      </div>
+
+      <div class="layout">
+        <!-- Sol taraf: Girdiler -->
+        <div class="panel">
+          <h2>1. CV Metni</h2>
+          <small>İstersen metni direkt yaz / yapıştır, istersen PDF ya da .txt dosyası yükle.</small>
+
+          <div class="file-row">
+            <input type="file" id="cvFile" accept=".pdf,.txt" />
+            <span class="file-hint">Desteklenen: PDF, TXT</span>
+          </div>
+
+          <textarea id="cvText" placeholder="CV metnini buraya yaz veya dosyadan yükle..."></textarea>
+
+          <h2 style="margin-top: 12px;">2. İş İlanı Metni</h2>
+          <small>İlan açıklamasını mümkün olduğunca tam hâliyle yazman, analizi güçlendirir.</small>
+          <textarea id="jobText" placeholder="İş ilanı metnini buraya yaz veya yapıştır..."></textarea>
+
+          <div class="btn-row">
+            <button id="analyzeBtn" class="btn-primary" onclick="analyze()">Analiz Et</button>
+            <button class="btn-secondary" type="button" onclick="clearAll()">Temizle</button>
+            <span id="statusText" class="status-text"></span>
+          </div>
+
+          <div id="errorBox" class="error-box" style="display:none;"></div>
+        </div>
+
+        <!-- Sağ taraf: Sonuçlar -->
+        <div class="panel">
+          <h2>Analiz Sonuçları</h2>
+          <small>Skor ve beceri eşleşmeleri burada gösterilir.</small>
+
+          <div id="result" class="result" style="display:none;">
+            <div class="score-box">
+              <div class="score-value" id="score">0</div>
+              <div class="score-max">/ 100</div>
+            </div>
+            <div>
+              <span id="scoreTag" class="score-tag">Henüz analiz yapılmadı</span>
+            </div>
+
+            <div class="skills-section">
+              <p>CV'den bulunan beceriler:</p>
+              <div id="cvSkills" class="skills-list"></div>
+            </div>
+
+            <div class="skills-section">
+              <p>İlanda aranan beceriler:</p>
+              <div id="jobSkills" class="skills-list"></div>
+            </div>
+
+            <div class="skills-section">
+              <p>Eşleşen beceriler:</p>
+              <div id="matchedSkills" class="skills-list"></div>
+            </div>
+
+            <div class="skills-section">
+              <p>Eksik beceriler:</p>
+              <div id="missingSkills" class="skills-list"></div>
+            </div>
+          </div>
+
+          <p id="emptyState" class="muted">
+            Henüz analiz yapılmadı. Soldaki alanlara CV ve ilan metnini girip "Analiz Et" butonuna tıkladığında sonuçlar burada görünecek.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    const cvTextEl = document.getElementById("cvText");
+    const jobTextEl = document.getElementById("jobText");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const statusText = document.getElementById("statusText");
+    const errorBox = document.getElementById("errorBox");
+
+    const resultDiv = document.getElementById("result");
+    const emptyState = document.getElementById("emptyState");
+    const scoreSpan = document.getElementById("score");
+    const scoreTag = document.getElementById("scoreTag");
+    const cvSkillsDiv = document.getElementById("cvSkills");
+    const jobSkillsDiv = document.getElementById("jobSkills");
+    const matchedSkillsDiv = document.getElementById("matchedSkills");
+    const missingSkillsDiv = document.getElementById("missingSkills");
+    const cvFileInput = document.getElementById("cvFile");
+
+    cvFileInput.addEventListener("change", handleCvFileUpload);
+
+    function setLoading(isLoading, message = "") {
+      analyzeBtn.disabled = isLoading;
+      statusText.textContent = isLoading ? message : "";
+    }
+
+    function showError(msg) {
+      errorBox.style.display = "block";
+      errorBox.textContent = msg;
+    }
+
+    function clearError() {
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+    }
+
+    function clearAll() {
+      cvTextEl.value = "";
+      jobTextEl.value = "";
+      resultDiv.style.display = "none";
+      emptyState.style.display = "block";
+      scoreSpan.textContent = "0";
+      scoreTag.textContent = "Henüz analiz yapılmadı";
+      cvSkillsDiv.innerHTML = "";
+      jobSkillsDiv.innerHTML = "";
+      matchedSkillsDiv.innerHTML = "";
+      missingSkillsDiv.innerHTML = "";
+      clearError();
+    }
+
+    function renderBadges(container, items, type = "normal") {
+      container.innerHTML = "";
+      if (!items || items.length === 0) {
+        const span = document.createElement("span");
+        span.className = "muted";
+        span.textContent = "(Bulunamadı)";
+        container.appendChild(span);
+        return;
+      }
+      items.forEach(skill => {
+        const span = document.createElement("span");
+        span.className = "badge";
+        if (type === "missing") span.classList.add("missing");
+        if (type === "matched") span.classList.add("matched");
+        span.textContent = skill;
+        container.appendChild(span);
+      });
+    }
+
+    async function handleCvFileUpload() {
+      clearError();
+      const file = cvFileInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      setLoading(true, "CV dosyasından metin çıkarılıyor...");
+
+      try {
+        const response = await fetch(`${API_BASE}/extract-cv-text`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(data.detail || "CV dosyası işlenirken bir hata oluştu.");
+        } else {
+          cvTextEl.value = data.text;
+        }
+      } catch (err) {
+        console.error(err);
+        showError("Sunucuya bağlanırken bir hata oluştu.");
+      } finally {
+        setLoading(false, "");
+      }
+    }
+
+    async function analyze() {
+      clearError();
+
+      const cvText = cvTextEl.value;
+      const jobText = jobTextEl.value;
+
+      if (!cvText.trim() || !jobText.trim()) {
+        showError("Lütfen hem CV metnini hem de iş ilanı metnini doldurun.");
+        return;
+      }
+
+      setLoading(true, "Analiz yapılıyor...");
+
+      try {
+        const response = await fetch(`${API_BASE}/match`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            cv_text: cvText,
+            job_text: jobText
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(data.detail || "Analiz sırasında bir hata oluştu.");
+          return;
+        }
+
+        // Skor
+        scoreSpan.textContent = data.similarity_score ?? 0;
+
+        // Skor etiketi
+        const score = data.similarity_score ?? 0;
+        if (score >= 80) {
+          scoreTag.textContent = "Çok Uyumlu";
+        } else if (score >= 60) {
+          scoreTag.textContent = "Uyumlu";
+        } else if (score >= 40) {
+          scoreTag.textContent = "Kısmen Uyumlu";
+        } else {
+          scoreTag.textContent = "Düşük Uyum";
+        }
+
+        renderBadges(cvSkillsDiv, data.cv_skills || []);
+        renderBadges(jobSkillsDiv, data.job_skills || []);
+        renderBadges(matchedSkillsDiv, data.matched_skills || [], "matched");
+        renderBadges(missingSkillsDiv, data.missing_skills || [], "missing");
+
+        emptyState.style.display = "none";
+        resultDiv.style.display = "block";
+
+      } catch (err) {
+        console.error(err);
+        showError("Sunucuya bağlanırken bir hata oluştu.");
+      } finally {
+        setLoading(false, "");
+      }
+    }
+  </script>
+</body>
+</html>
