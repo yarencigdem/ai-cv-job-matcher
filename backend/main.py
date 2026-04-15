@@ -20,13 +20,13 @@ app = FastAPI(
 # CORS ayarları
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],      # Gerekirse burayı kısıtlayabilirsin
+    allow_origins=["*"],      
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Embedding modeli (ilk çalıştırmada indirilecek)
+# Embedding modeli 
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 # ---- Skill listesi (genişletilmiş) ----
